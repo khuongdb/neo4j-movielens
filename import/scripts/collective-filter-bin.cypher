@@ -49,23 +49,45 @@ WITH u, m, actual_rating,
     COLLECT(similarity)[0..10] AS similarity, 
     COLLECT(nb_common_movie)[0..10] AS nb_common_movie
 
-// Calculate the predict rating
-WITH u, m, actual_rating,
-    REDUCE(sum = 0, i IN RANGE(0, SIZE(similarity) - 1) | sum + (similarity[i] * r2_rating[i])) AS weighted_sum,
-    REDUCE(sum = 0, i IN RANGE(0, SIZE(similarity) - 1) | sum + similarity[i]) AS total_weight
-    // SIZE(similarity) AS count_similarity
-    
-WITH u, m, actual_rating,
-    weighted_sum / total_weight AS predict_rating
+WITH u, m, actual_rating, r2_rating
+
+UNWIND(r2_rating) AS r2_ratings
+
+WITH u, m, actual_rating, r2_ratings,
+     CASE 
+        WHEN 0 < r2_ratings <= 1 THEN 'Bin 1'
+        WHEN 1 < r2_ratings <= 2 THEN 'Bin 2'
+        WHEN 2 < r2_ratings <= 3 THEN 'Bin 3'
+        WHEN 3 < r2_ratings <= 4 THEN 'Bin 4'
+        WHEN 4 < r2_ratings <= 5 THEN 'Bin 5'
+    END AS bin
+
+WITH u, m, actual_rating, 
+    COLLECT(r2_ratings) AS r2_rating, 
+    bin, COUNT(bin) AS nb_r2_rating 
+ORDER BY u, m, nb_r2_rating DESC
 
 WITH u, m, actual_rating,
-    ROUND(predict_rating * 2) / 2 AS predict_rating
+    COLLECT(r2_rating) AS r2_rating, 
+    COLLECT(nb_r2_rating) AS nb_r2_rating
+
+WITH u, m, actual_rating,
+    r2_rating[0..1] AS r2_rating
+
+UNWIND(r2_rating) AS r2_ratings
+
+WITH u, m, actual_rating, 
+    REDUCE(sum = 0, i IN RANGE(0, SIZE(r2_ratings) - 1) | sum + r2_ratings[i]) AS sum_bin,
+    SIZE(r2_ratings) AS size
+
+WITH u, m, actual_rating,
+    ROUND(sum_bin/size * 2) / 2 AS predict_rating
 
 // Model evaluation with square error    
 WITH u, m ,actual_rating, predict_rating, 
     (predict_rating - actual_rating) * (predict_rating - actual_rating) AS square_error
 
-RETURN u.id AS user, 
+WITH u.id AS user, 
     m.title AS movie,
     actual_rating,
     predict_rating,
@@ -73,6 +95,6 @@ RETURN u.id AS user,
 ORDER BY square_error DESC
 
 // Total RMSE of test dataset
-// WITH COUNT(*) AS count, SUM(square_error) AS sse
-// RETURN count, SQRT(tofloat(sse)/count) AS RMSE
+WITH COUNT(*) AS count, SUM(square_error) AS sse
+RETURN count, SQRT(tofloat(sse)/count) AS RMSE
 

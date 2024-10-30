@@ -30,6 +30,36 @@ WITH u, m, actual_rating,
 WITH u, m, actual_rating,
     sum/count_similarity AS predict_rating
 
+WITH u, m, actual_rating,
+    ROUND(predict_rating * 2) / 2 AS predict_rating
+// Use the mode of m2
+// WITH u, m, actual_rating,
+//     r2_rating,
+//     COUNT(r2_rating) AS r2_freq
+//     ORDER BY r2_freq DESC
+
+// WITH u, m, actual_rating,
+//     COLLECT(r2_rating) AS r2_ratings
+
+// WITH u, m, actual_rating,
+//     (r2_ratings[0..1]) AS predict_ratings
+
+// UNWIND(predict_ratings) AS predict_rating
+
+
+// Calculate predict rating 
+// // based on the median of similar movies
+// WITH u, m, actual_rating, 
+//     COLLECT(r2_rating) AS r2_ratings
+
+// WITH u, m, actual_rating,
+//     CASE 
+//         WHEN size(r2_ratings) % 2 = 0 
+//         THEN (r2_ratings[size(r2_ratings) / 2 - 1] + r2_ratings[size(r2_ratings) / 2]) / 2.0
+//         ELSE r2_ratings[size(r2_ratings) / 2]
+//     END AS predict_rating
+
+
 // Model evaluation with square error
 WITH u, m, actual_rating, predict_rating,
     (predict_rating - actual_rating) * (predict_rating - actual_rating) AS square_error

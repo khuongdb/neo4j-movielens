@@ -76,6 +76,9 @@ WITH u, m, actual_rating,
 WITH u, m, actual_rating,
     weighted_sum / total_weight AS predict_rating
 
+WITH u, m, actual_rating,
+    ROUND(predict_rating * 2) / 2 AS predict_rating
+
 // Model evaluation with square error    
 WITH u, m ,actual_rating, predict_rating, 
     (predict_rating - actual_rating) * (predict_rating - actual_rating) AS square_error
