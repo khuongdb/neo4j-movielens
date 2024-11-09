@@ -65,6 +65,7 @@ ORDER BY u.id, similarity DESC, nb_common_movie DESC
 WITH u, m, actual_rating,
     COLLECT(r2)[0..5] AS r2_rating,
     COLLECT(similarity)[0..5] AS similarity
+    COLLECT(nb_common_movie)[0..10] AS nb_common_movie
 
 // Calculate the predict rating
 // based on average of k-NN users
