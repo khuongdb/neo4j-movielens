@@ -65,14 +65,14 @@ WITH u, m, actual_rating,
 WITH u, m ,actual_rating, predict_rating, 
     (predict_rating - actual_rating) * (predict_rating - actual_rating) AS square_error
 
-RETURN u.id AS user, 
-    m.title AS movie,
-    actual_rating,
-    predict_rating,
-    square_error
-ORDER BY square_error DESC
+// RETURN u.id AS user, 
+//     m.title AS movie,
+//     actual_rating,
+//     predict_rating,
+//     square_error
+// ORDER BY square_error DESC
 
 // Total RMSE of test dataset
-// WITH COUNT(*) AS count, SUM(square_error) AS sse
-// RETURN count, SQRT(tofloat(sse)/count) AS RMSE
+WITH COUNT(*) AS count, SUM(square_error) AS sse
+RETURN count, SQRT(tofloat(sse)/count) AS RMSE
 

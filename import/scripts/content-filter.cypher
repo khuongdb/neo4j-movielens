@@ -31,6 +31,7 @@ ORDER BY shared_genres DESC
 // WITH u, m, actual_rating,
 //     ROUND(predict_rating * 2) / 2 AS predict_rating
 
+
 // // Calculate predict rating
 // // base on the mode of m2.rating
 // WITH u, m, actual_rating,
@@ -74,5 +75,5 @@ ORDER BY square_error DESC
 // RETURN user, movie, actual_rating, predict_rating, square_error
 
 //Total RSME of test dataset
-// WITH COUNT(*) AS count, SUM(square_error) AS sse
-// RETURN count, SQRT(tofloat(sse)/count) AS RMSE
+WITH COUNT(*) AS count, SUM(square_error) AS sse
+RETURN count, SQRT(tofloat(sse)/count) AS RMSE

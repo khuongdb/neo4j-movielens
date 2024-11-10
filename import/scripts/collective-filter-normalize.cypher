@@ -64,8 +64,9 @@ ORDER BY u.id, similarity DESC, nb_common_movie DESC
 
 WITH u, m, actual_rating,
     COLLECT(r2)[0..5] AS r2_rating,
-    COLLECT(similarity)[0..5] AS similarity
+    COLLECT(similarity)[0..5] AS similarity,
     COLLECT(nb_common_movie)[0..10] AS nb_common_movie
+
 
 // Calculate the predict rating
 // based on average of k-NN users
@@ -80,17 +81,18 @@ WITH u, m, actual_rating,
 WITH u, m, actual_rating,
     ROUND(predict_rating * 2) / 2 AS predict_rating
 
+
 // Model evaluation with square error    
 WITH u, m ,actual_rating, predict_rating, 
     (predict_rating - actual_rating) * (predict_rating - actual_rating) AS square_error
 
-RETURN u.id AS user, 
-    m.title AS movie,
-    actual_rating,
-    predict_rating,
-    square_error
-ORDER BY square_error DESC
+// RETURN u.id AS user, 
+//     m.title AS movie,
+//     actual_rating,
+//     predict_rating,
+//     square_error
+// ORDER BY square_error DESC
 
 // Total RMSE of test dataset
-// WITH COUNT(*) AS count, SUM(square_error) AS sse
-// RETURN count, SQRT(tofloat(sse)/count) AS RMSE
+WITH COUNT(*) AS count, SUM(square_error) AS sse
+RETURN count, SQRT(tofloat(sse)/count) AS RMSE
